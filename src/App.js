@@ -1,24 +1,43 @@
-import logo from './logo.svg';
+import React, { useEffect } from 'react';
+import { Routes, Route, useNavigate } from "react-router-dom";
+
+import axiosClient from 'libraries/axiosClient';
+import { LOCATIONS } from 'constants/index';
+
+import Login from 'pages/login';
+import CategoryPage from 'pages/Categories';
+import SupplierPage from 'pages/suppliers';
+import ProductList from 'pages/product';
+import ProductDetail from 'pages/product/ProductDetail';
+import NotFound from 'pages/notFound';
+
 import './App.css';
 
 function App() {
+  const navigate = useNavigate();
+
+  const token = window.localStorage.getItem('TOKEN');
+
+  useEffect(() => {
+    if (token) {
+      axiosClient.defaults.headers.Authorization = `Bearer ${token}`;
+    } else {
+      navigate(LOCATIONS.LOGIN);
+    }
+  }, [navigate, token]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    !token ? <Routes>
+      <Route path="login" element={<Login />} />
+    </Routes> : <Routes>
+      <Route index element={<ProductList />} />
+      <Route path="products" element={<ProductList />} />
+      {/* <Route path={LOCATIONS.PRODUCTS_ADD} element={<ProductDetail />} /> */}
+      <Route path="products/:id" element={<ProductDetail />} />
+      <Route path="categories" element={<CategoryPage />} />
+      <Route path="suppliers" element={<SupplierPage />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 
